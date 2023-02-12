@@ -52,7 +52,7 @@ func RegisterCron(spec string, f func(ctx context.Context, params ...interface{}
 
 // RegisterOnceCron register cron execute once
 func RegisterOnceCron(spec string, f func(ctx context.Context, params ...interface{}) error, params ...interface{}) (string, error) {
-	return registerCron(spec, f, false, true, 0, nil, params)
+	return registerCron(spec, f, false, true, 0, nil, params...)
 }
 
 // RegisterSingletonCron 注册定时任务, 同个任务同个时间最多被一个实例执行
@@ -62,7 +62,7 @@ func RegisterSingletonCron(spec string, f func(ctx context.Context, params ...in
 
 // RegisterSingletonOnceCron 注册定时任务, 同个任务同个时间最多被一个实例执行,执行一次后自动移除
 func RegisterSingletonOnceCron(spec string, f func(ctx context.Context, params ...interface{}) error, redis redis.UniversalClient, params ...interface{}) (string, error) {
-	return registerCron(spec, f, true, true, 0, redis, params)
+	return registerCron(spec, f, true, true, 0, redis, params...)
 }
 
 // RemoveCron remove cron
@@ -228,9 +228,11 @@ func (job cronJob) Run() {
 	err = job.Func(ctx, job.args...)
 	if err != nil {
 		status = "failed"
-		tlog.E(ctx).Err(err).Detailf("job id: %s, job name: %s, job spec: %s, job,duration: %d second, job latency: %f millisecond", job.Id, job.Name, job.Spec, job.Duration/time.Second, tmetric.SinceMS(curTime)).Msg("cron job done with error")
+		tlog.E(ctx).Err(err).Detailf("job id: %s, job name: %s, job spec: %s, job,duration: %d second, job latency: %f millisecond",
+			job.Id, job.Name, job.Spec, job.Duration/time.Second, tmetric.SinceMS(curTime)).Msg("cron job done with error")
 	} else {
-		tlog.I(ctx).Detailf("job id: %s, job name: %s, job spec: %s, job,duration: %d second, job latency: %f millisecond", job.Id, job.Name, job.Spec, job.Duration/time.Second, tmetric.SinceMS(curTime)).Msg("cron job done")
+		tlog.I(ctx).Detailf("job id: %s, job name: %s, job spec: %s, job,duration: %d second, job latency: %f millisecond",
+			job.Id, job.Name, job.Spec, job.Duration/time.Second, tmetric.SinceMS(curTime)).Msg("cron job done")
 	}
 
 	if job.Once {
