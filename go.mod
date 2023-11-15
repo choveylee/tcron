@@ -3,7 +3,7 @@ module github.com/choveylee/tcron
 go 1.19
 
 require (
-	github.com/choveylee/tlog v0.0.0-20221104025109-ffb6b11cecbe
+	github.com/choveylee/tlog v0.0.0-20231115064806-a1ec26572d92
 	github.com/choveylee/tmetric v0.0.0-20231114032854-482b13d9305e
 	github.com/choveylee/ttrace v0.0.0-20231114034446-0971db4cbf51
 	github.com/choveylee/tutil v0.0.0-20231115021821-f7cedbe77e48
