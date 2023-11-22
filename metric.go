@@ -13,30 +13,12 @@ import (
 )
 
 var (
-	cronJobStatusCounter, _ = tmetric.NewGaugeVec(
-		"cron_job_status",
-		"CronJob",
-		[]string{
-			"name",
-			"status",
-		},
-	)
-
 	cronJobHistogram, _ = tmetric.NewHistogramVec(
 		"cron_job_latency",
 		"CronJob",
 		[]string{
 			"name",
 			"status",
-		},
-	)
-	cronJobInfoGauge, _ = tmetric.NewGaugeVec(
-		"cron_job_info",
-		"CronJob",
-		[]string{
-			"name",
-			"singleton",
-			"once",
 		},
 	)
 )

@@ -14,7 +14,6 @@ import (
 	"reflect"
 	"runtime"
 	"runtime/debug"
-	"strconv"
 	"sync"
 	"time"
 
@@ -44,6 +43,11 @@ func init() {
 	defaultCronManager.cronClient.Start()
 }
 
+type CronRedisClient interface {
+	SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.BoolCmd
+	Del(ctx context.Context, keys ...string) *redis.IntCmd
+}
+
 // RegisterCron register cron
 // delta define execute random bias [0, delta)
 func RegisterCron(spec string, f func(ctx context.Context, params ...interface{}) error, delta time.Duration, params ...interface{}) (string, error) {
@@ -56,12 +60,12 @@ func RegisterOnceCron(spec string, f func(ctx context.Context, params ...interfa
 }
 
 // RegisterSingletonCron 注册定时任务, 同个任务同个时间最多被一个实例执行
-func RegisterSingletonCron(spec string, f func(ctx context.Context, params ...interface{}) error, redis redis.UniversalClient) (string, error) {
+func RegisterSingletonCron(spec string, f func(ctx context.Context, params ...interface{}) error, redis CronRedisClient) (string, error) {
 	return registerCron(spec, f, true, false, 0, redis)
 }
 
 // RegisterSingletonOnceCron 注册定时任务, 同个任务同个时间最多被一个实例执行,执行一次后自动移除
-func RegisterSingletonOnceCron(spec string, f func(ctx context.Context, params ...interface{}) error, redis redis.UniversalClient, params ...interface{}) (string, error) {
+func RegisterSingletonOnceCron(spec string, f func(ctx context.Context, params ...interface{}) error, redis CronRedisClient, params ...interface{}) (string, error) {
 	return registerCron(spec, f, true, true, 0, redis, params...)
 }
 
@@ -70,7 +74,7 @@ func RemoveCron(id string) bool {
 	return removeCronId(id)
 }
 
-func registerCron(spec string, f func(ctx context.Context, params ...interface{}) error, singleton bool, once bool, delta time.Duration, redis redis.UniversalClient, params ...interface{}) (string, error) {
+func registerCron(spec string, f func(ctx context.Context, params ...interface{}) error, singleton bool, once bool, delta time.Duration, redis CronRedisClient, params ...interface{}) (string, error) {
 	name := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 
 	schedule, err := defaultCronManager.cronParser.Parse(spec)
@@ -100,8 +104,6 @@ func registerCron(spec string, f func(ctx context.Context, params ...interface{}
 }
 
 func processJob(job *cronJob, schedule *cron.Schedule) (string, error) {
-	cronJobInfoGauge.Set(float64(job.Duration), job.Name, strconv.FormatBool(job.Singleton), strconv.FormatBool(job.Once))
-
 	var entryId cron.EntryID
 
 	if job.Delta > 0 {
@@ -174,7 +176,7 @@ type cronJob struct {
 	Once      bool
 	Duration  time.Duration
 	Delta     time.Duration
-	redis     redis.UniversalClient
+	redis     CronRedisClient
 	args      []interface{}
 }
 
@@ -209,19 +211,21 @@ func (job cronJob) Run() {
 	}()
 
 	if job.Singleton {
-		val, err := job.redis.SetNX(
-			ctx, job.Name, curTime.Format(time.RFC3339), job.Duration/2).Result()
-		if err != nil {
-			tlog.W(ctx).Err(err).Msg("redis setnx failed while doing job")
-			return
-		} else if !val {
+		if job.redis != nil {
+			val, err := job.redis.SetNX(ctx, job.Name, curTime.Format(time.RFC3339), job.Duration/2).Result()
+			if err != nil {
+				tlog.W(ctx).Err(err).Msg("redis setnx failed while doing job")
+
+				return
+			} else if !val {
+				return
+			}
+
+			defer job.redis.Del(ctx, job.Name)
+		} else {
 			return
 		}
-
-		defer job.redis.Del(ctx, job.Name)
 	}
-
-	cronJobStatusCounter.Set(float64(curTime.Unix()), job.Name, "doing")
 
 	status := "success"
 
@@ -239,9 +243,7 @@ func (job cronJob) Run() {
 		removeCronId(job.Id)
 	}
 
-	cronJobStatusCounter.Set(float64(curTime.Unix()), job.Name, status)
 	cronJobHistogram.Observe(tmetric.SinceMS(curTime), job.Name, status)
-	cronJobInfoGauge.Set(float64(job.Duration/time.Second), job.Name, strconv.FormatBool(job.Singleton), strconv.FormatBool(job.Once))
 }
 
 func startSpanWithCron(ctx context.Context, spanName string, opts ...traceotel.SpanStartOption) (context.Context, traceotel.Span) {
