@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/choveylee/tlog v0.0.0-20231115064806-a1ec26572d92
 	github.com/choveylee/tmetric v0.0.0-20231114032854-482b13d9305e
-	github.com/choveylee/ttrace v0.0.0-20231115151304-5df08fe49c78
-	github.com/choveylee/tutil v0.0.0-20231115081349-c02fe00d9a7b
+	github.com/choveylee/ttrace v0.0.0-20231125134629-f9d3091c3600
+	github.com/choveylee/tutil v0.0.0-20231123021656-7175fb90450c
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/robfig/cron/v3 v3.0.1
 	go.opentelemetry.io/otel v1.21.0

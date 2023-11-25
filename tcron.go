@@ -24,8 +24,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/robfig/cron/v3"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
-	traceotel "go.opentelemetry.io/otel/trace"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 var defaultCronManager = &cronManager{
@@ -187,28 +186,21 @@ func (job cronJob) Run() {
 		}
 	}()
 
-	var err error
-
 	curTime := time.Now()
 
-	ctx := context.Background()
-
-	ctx, span := startSpanWithCron(context.Background(), job.Name, traceotel.WithTimestamp(curTime),
-		traceotel.WithAttributes(
+	opts := []oteltrace.SpanStartOption{
+		oteltrace.WithSpanKind(oteltrace.SpanKindInternal),
+		oteltrace.WithTimestamp(curTime),
+		oteltrace.WithAttributes(
 			attribute.String("cron.name", job.Name),
 			attribute.String("cron.spec", job.Spec),
 			attribute.Bool("cron.singleton", job.Singleton),
 			attribute.Bool("cron.once", job.Once),
-		))
-	defer func() {
-		if err != nil {
-			span.SetStatus(codes.Unset, err.Error())
-			span.RecordError(err)
-		} else {
-			span.SetStatus(codes.Ok, "")
-		}
-		span.End()
-	}()
+		),
+	}
+
+	ctx, span := ttrace.Start(context.Background(), "cron."+job.Name, opts...)
+	defer span.End()
 
 	if job.Singleton {
 		if job.redis != nil {
@@ -229,7 +221,7 @@ func (job cronJob) Run() {
 
 	status := "success"
 
-	err = job.Func(ctx, job.args...)
+	err := job.Func(ctx, job.args...)
 	if err != nil {
 		status = "failed"
 		tlog.E(ctx).Err(err).Detailf("job id: %s, job name: %s, job spec: %s, job,duration: %d second, job latency: %f millisecond",
@@ -244,10 +236,4 @@ func (job cronJob) Run() {
 	}
 
 	cronJobHistogram.Observe(tmetric.SinceMS(curTime), job.Name, status)
-}
-
-func startSpanWithCron(ctx context.Context, spanName string, opts ...traceotel.SpanStartOption) (context.Context, traceotel.Span) {
-	opts = append(opts, traceotel.WithSpanKind(traceotel.SpanKindServer))
-
-	return ttrace.GetTracer().Start(ctx, spanName, opts...)
 }
