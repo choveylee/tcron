@@ -17,6 +17,8 @@ github.com/chenzhuoyu/iasm v0.9.1 h1:tUHQJXo3NhBqw6s33wkGn9SP3bvrWLdlVIJ3hQBL7P0
 github.com/chenzhuoyu/iasm v0.9.1/go.mod h1:Xjy2NpN3h7aUqeqM+woSuuvxmIe6+DDsiNLIrkAmYog=
 github.com/choveylee/tcfg v0.0.0-20231115020527-b8bdc45c86eb h1:TtRSl3uJmguuSxPRg/Kh3opHVsNAQTjVAv02Jm6N+0I=
 github.com/choveylee/tcfg v0.0.0-20231115020527-b8bdc45c86eb/go.mod h1:Yo4aJ152DZ3S9qSRMdJ5qorGA/sM6OqQ9PGGMv7BLQ0=
+github.com/choveylee/tcfg v0.0.0-20231210122623-e0407bbfb272 h1:RZxqkA7N7y1IoW+d+oJrPruTKCuR5dCJQ1CaQTNaBTw=
+github.com/choveylee/tcfg v0.0.0-20231210122623-e0407bbfb272/go.mod h1:Yo4aJ152DZ3S9qSRMdJ5qorGA/sM6OqQ9PGGMv7BLQ0=
 github.com/choveylee/tconst v0.0.0-20221103024542-ac5c9639926c h1:oT0/bvPQBcxdJ4xU5YvtABZLr3lY+2nDJySmJT0/W+Q=
 github.com/choveylee/terror v0.0.0-20221105132813-997ba58d0bf1 h1:0mm6Dlqj3Nb7emQO/gPR7TAglwNVBeZR4pE6k3Nwrgc=
 github.com/choveylee/terror v0.0.0-20221105132813-997ba58d0bf1/go.mod h1:ozrDNSD9LQfb2c4+nzatFV5ijJmJjvlRxyuaBIhd3rg=
@@ -90,6 +92,7 @@ github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/
 github.com/mattn/go-isatty v0.0.19/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
+github.com/matttproud/golang_protobuf_extensions v1.0.4 h1:mmDVorXM7PCGKw94cs5zkfA9PSy5pEvNWRP0ET0TIVo=
 github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 h1:jWpvCLoY8Z/e3VKvlsiIGKtc+UG6U5vzxaoagmhXfyg=
 github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0/go.mod h1:QUyp042oQthUoa9bqDv0ER0wrtXnBruoNd7aNjkbP+k=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
