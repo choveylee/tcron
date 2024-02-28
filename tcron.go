@@ -21,7 +21,7 @@ import (
 	"github.com/choveylee/tmetric"
 	"github.com/choveylee/ttrace"
 	"github.com/choveylee/tutil"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"github.com/robfig/cron/v3"
 	"go.opentelemetry.io/otel/attribute"
 	oteltrace "go.opentelemetry.io/otel/trace"
