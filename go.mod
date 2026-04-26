@@ -3,10 +3,10 @@ module github.com/choveylee/tcron
 go 1.25.0
 
 require (
-	github.com/choveylee/tlog v0.0.0-20260412074731-f755f9af6d8d
-	github.com/choveylee/tmetric v0.0.0-20260412080139-0f85f633e470
-	github.com/choveylee/ttrace v0.0.0-20260412045043-febeb7a61ef7
-	github.com/choveylee/tutil v0.0.0-20260412040525-f308382622d2
+	github.com/choveylee/tlog v0.0.0-20260426020635-4f6543e44873
+	github.com/choveylee/tmetric v0.0.0-20260426004748-e189f715a442
+	github.com/choveylee/ttrace v0.0.0-20260426012533-0d1f95b1343c
+	github.com/choveylee/tutil v0.0.0-20260425004000-c0ca996496cd
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/robfig/cron/v3 v3.0.1
 	go.opentelemetry.io/otel v1.43.0
@@ -17,15 +17,15 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/choveylee/tcfg v0.0.0-20260412041648-3016e7c2ab48 // indirect
-	github.com/choveylee/terror v0.0.0-20260412034942-5ce61c9302af // indirect
+	github.com/choveylee/tcfg v0.0.0-20260425031243-ed7d89ae6004 // indirect
+	github.com/choveylee/terror v0.0.0-20260425000752-47a04ab0c1a9 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/getsentry/sentry-go v0.45.0 // indirect
+	github.com/getsentry/sentry-go v0.46.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -38,9 +38,9 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/procfs v0.20.1 // indirect
-	github.com/rs/zerolog v1.35.0 // indirect
+	github.com/rs/zerolog v1.35.1 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
-	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
+	go.mongodb.org/mongo-driver/v2 v2.5.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.68.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.43.0 // indirect
@@ -55,8 +55,8 @@ require (
 	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260406210006-6f92a3bedf2d // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260420184626-e10c466a9529 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260420184626-e10c466a9529 // indirect
 	google.golang.org/grpc v1.80.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )

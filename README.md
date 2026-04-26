@@ -1,6 +1,6 @@
 # tcron
 
-`tcron` is a small Go library that wraps [robfig/cron/v3](https://github.com/robfig/cron) to register periodic and one-shot jobs with optional schedule jitter, optional distributed mutual exclusion using Redis, OpenTelemetry tracing, and Prometheus-style latency histograms via [tmetric](https://github.com/choveylee/tmetric).
+`tcron` is a Go package for registering and executing background jobs on top of [robfig/cron/v3](https://github.com/robfig/cron). It supports recurring jobs, one-shot jobs, optional schedule jitter, and Redis-backed singleton execution across processes. When used with [ttrace](https://github.com/choveylee/ttrace) and [tmetric](https://github.com/choveylee/tmetric), each execution also emits an OpenTelemetry span and a latency histogram.
 
 ## Requirements
 
@@ -8,11 +8,11 @@
 
 ## Features
 
-- **Standard cron jobs** — Register a handler with a cron expression (with seconds field).
-- **Jitter** — Add a uniform random delay in `[0, delta)` to each computed next run time to reduce thundering herds.
-- **Run once** — Schedule a job for the next tick only, then unregister it automatically.
-- **Singleton (distributed lock)** — Ensure at most one instance runs the job at a given time across processes, using Redis `SET NX` keyed by the handler’s reflected name.
-- **Observability** — Spans for each run (via [ttrace](https://github.com/choveylee/ttrace)) and a latency histogram labeled by job name and status.
+- **Recurring scheduling** — Register a handler with a cron expression that includes the seconds field.
+- **Schedule jitter** — Add a uniform random delay in `[0, delta)` to each computed next run time to reduce thundering herds.
+- **One-shot execution** — Schedule a job for the next matching tick and automatically unregister it after the first execution attempt.
+- **Distributed singleton execution** — Ensure that at most one process executes a job at a time by using a Redis lock with token-based compare-and-delete release.
+- **Observability** — Emit a span for each execution (via [ttrace](https://github.com/choveylee/ttrace)) and record a latency histogram labeled by job name and status.
 
 ## Installation
 
@@ -30,7 +30,7 @@ id, err := tcron.RegisterCron("0 */5 * * * *", myJob, 0) // every 5 minutes, no 
 
 ### Jitter
 
-If `delta` is positive, each scheduled activation time is the cron engine’s next time plus a random offset in `[0, delta)`.
+If `delta` is positive, each scheduled activation time is the cron engine's next time plus a random offset in `[0, delta)`.
 
 ```go
 id, err := tcron.RegisterCron("0 * * * * *", myJob, 30*time.Second, arg1, arg2)
@@ -44,7 +44,7 @@ id, err := tcron.RegisterOnceCron("0 * * * * *", myJob)
 
 ### Singleton job (Redis)
 
-Pass a Redis client implementing `tcron.CronRedisClient` and a lock TTL. The TTL should exceed the worst-case execution time of the handler. If `lockTtl <= 0`, the library uses the interval between consecutive schedule ticks; if that is zero, it uses one minute.
+Pass a Redis client implementing `tcron.CronRedisClient` and supporting Redis `EVAL` (for example `*redis.Client`, `*redis.ClusterClient`, `*redis.Ring`, or `redis.UniversalClient`), together with a lock TTL. The TTL should exceed the worst-case execution time of the handler. If `lockTtl <= 0`, the library uses the interval between consecutive schedule ticks; if that interval is zero, it uses one minute. Passing a nil Redis client, or a client without `Eval` support, causes registration to fail.
 
 ```go
 id, err := tcron.RegisterSingletonCron("0 * * * * *", myJob, rdb, 5*time.Minute)
@@ -64,8 +64,8 @@ ok := tcron.RemoveCron(id)
 
 ## Job identity and Redis keys
 
-Job names are derived from `runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()`. For singleton jobs, this string is the Redis lock key. Closures typically receive synthetic names (for example `main.main.func1`); for stable keys and metrics, prefer top-level functions or document naming limitations for your deployment.
+Job names are derived from `runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()`. For singleton jobs, this string becomes the Redis lock key, while the lock value is a unique token so release can use compare-and-delete rather than unconditionally deleting the key. Closures typically receive synthetic names (for example `main.main.func1`); for stable lock keys and metric labels, prefer top-level functions or document the naming implications for your deployment.
 
 ## Metrics
 
-The package registers a histogram `cron_job_latency` (help: `CronJob`) with labels `name` and `status` (`success` or `failed`). Values are latencies in milliseconds, consistent with [tmetric](https://github.com/choveylee/tmetric) defaults.
+The package registers a histogram named `cron_job_latency` (help text: `CronJob`) with the labels `name` and `status` (`success` or `failed`). Recorded values are latencies in milliseconds, consistent with the default bucket configuration provided by [tmetric](https://github.com/choveylee/tmetric). If histogram registration fails, the package logs a warning and continues with metrics disabled.
