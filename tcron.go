@@ -46,8 +46,8 @@ var defaultCronManager = &cronManager{
 var _ cron.Job = cronJob{}
 
 var (
-	errNilRedisClient                = errors.New("tcron: singleton jobs require a non-nil Redis client")
-	errRedisClientMissingEvalSupport = errors.New("tcron: singleton jobs require a Redis client with Eval support for conditional lock release")
+	errNilRedisClient                = errors.New("tcron: singleton jobs require a non-nil redis client")
+	errRedisClientMissingEvalSupport = errors.New("tcron: singleton jobs require a redis client with Eval support for conditional lock release")
 )
 
 const releaseSingletonLockScript = `

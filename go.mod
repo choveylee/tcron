@@ -3,10 +3,10 @@ module github.com/choveylee/tcron
 go 1.25.0
 
 require (
-	github.com/choveylee/tlog v0.0.0-20260426020635-4f6543e44873
-	github.com/choveylee/tmetric v0.0.0-20260426004748-e189f715a442
-	github.com/choveylee/ttrace v0.0.0-20260426012533-0d1f95b1343c
-	github.com/choveylee/tutil v0.0.0-20260425004000-c0ca996496cd
+	github.com/choveylee/tlog v0.0.0-20260502054322-af6bbcc65693
+	github.com/choveylee/tmetric v0.0.0-20260502053803-579a8f7530fb
+	github.com/choveylee/ttrace v0.0.0-20260502053133-734a04e17f5a
+	github.com/choveylee/tutil v0.0.0-20260502021941-11dd7442fd05
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/robfig/cron/v3 v3.0.1
 	go.opentelemetry.io/otel v1.43.0
@@ -17,8 +17,8 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/choveylee/tcfg v0.0.0-20260425031243-ed7d89ae6004 // indirect
-	github.com/choveylee/terror v0.0.0-20260425000752-47a04ab0c1a9 // indirect
+	github.com/choveylee/tcfg v0.0.0-20260502053036-a4c795ccc946 // indirect
+	github.com/choveylee/terror v0.0.0-20260502021137-6588de2883eb // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/getsentry/sentry-go v0.46.0 // indirect

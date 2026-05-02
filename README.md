@@ -30,7 +30,7 @@ id, err := tcron.RegisterCron("0 */5 * * * *", myJob, 0) // every 5 minutes, no 
 
 ### Jitter
 
-If `delta` is positive, each scheduled activation time is the cron engine's next time plus a random offset in `[0, delta)`.
+If `delta` is positive, each scheduled activation time is the next time computed by the cron engine plus a random offset in `[0, delta)`.
 
 ```go
 id, err := tcron.RegisterCron("0 * * * * *", myJob, 30*time.Second, arg1, arg2)
@@ -68,4 +68,4 @@ Job names are derived from `runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name
 
 ## Metrics
 
-The package registers a histogram named `cron_job_latency` (help text: `CronJob`) with the labels `name` and `status` (`success` or `failed`). Recorded values are latencies in milliseconds, consistent with the default bucket configuration provided by [tmetric](https://github.com/choveylee/tmetric). If histogram registration fails, the package logs a warning and continues with metrics disabled.
+The package registers a histogram named `cron_job_latency` (help text: `CronJob`) with the labels `name` and `status` (`success` or `failed`). Recorded values are latencies in milliseconds, consistent with the default bucket configuration provided by [tmetric](https://github.com/choveylee/tmetric). If histogram registration fails, the package logs a warning and continues with latency metric collection disabled.
