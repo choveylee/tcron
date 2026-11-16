@@ -4,14 +4,14 @@
 
 ## Requirements
 
-- Go 1.25 or later (see `go.mod`).
+- Go 1.27.4 or later (see `go.mod`).
 
 ## Features
 
 - **Recurring scheduling** — Register a handler with a cron expression that includes the seconds field.
-- **Schedule jitter** — Add a uniform random delay in `[0, delta)` to each computed next run time to reduce thundering herds.
-- **One-shot execution** — Schedule a job for the next matching tick and automatically unregister it after the first execution attempt.
-- **Distributed singleton execution** — Ensure that at most one process executes a job at a time by using a Redis lock with token-based compare-and-delete release.
+- **Schedule jitter** — Add a uniform random delay bounded by `delta` and the interval to the following tick.
+- **One-shot execution** — Unregister a job as soon as its first execution is admitted, before calling the handler.
+- **Distributed singleton execution** — Use a Redis lease with an ownership token and compare-and-delete release. The lease protects the job until it expires.
 - **Observability** — Emit a span for each execution (via [ttrace](https://github.com/choveylee/ttrace)) and record a latency histogram labeled by job name and status.
 
 ## Installation
@@ -30,7 +30,7 @@ id, err := tcron.RegisterCron("0 */5 * * * *", myJob, 0) // every 5 minutes, no 
 
 ### Jitter
 
-If `delta` is positive, each scheduled activation time is the next time computed by the cron engine plus a random offset in `[0, delta)`.
+If `delta` is positive, each scheduled activation adds a random offset in `[0, delta)`, shortened when necessary to land before the following scheduled tick. Registration returns an error when the scheduler can find no next execution time.
 
 ```go
 id, err := tcron.RegisterCron("0 * * * * *", myJob, 30*time.Second, arg1, arg2)
@@ -44,7 +44,9 @@ id, err := tcron.RegisterOnceCron("0 * * * * *", myJob)
 
 ### Singleton job (Redis)
 
-Pass a Redis client implementing `tcron.CronRedisClient` and supporting Redis `EVAL` (for example `*redis.Client`, `*redis.ClusterClient`, `*redis.Ring`, or `redis.UniversalClient`), together with a lock TTL. The TTL should exceed the worst-case execution time of the handler. If `lockTtl <= 0`, the library uses the interval between consecutive schedule ticks; if that interval is zero, it uses one minute. Passing a nil Redis client, or a client without `Eval` support, causes registration to fail.
+Pass a Redis client implementing `tcron.CronRedisClient` and supporting Redis `EVAL` (for example `*redis.Client`, `*redis.ClusterClient`, `*redis.Ring`, or `redis.UniversalClient`), together with a lease TTL. Set the TTL to cover acquisition and the full handler run. Other processes can acquire the lease after expiry. If `lockTtl <= 0`, the library uses the first scheduled interval, or one minute when no interval is available. The effective TTL uses Redis millisecond precision with a minimum of one millisecond.
+
+Acquisition and release use contexts with deadlines of up to five seconds. Enable `ContextTimeoutEnabled` on go-redis clients to apply these deadlines to Redis I/O. An acquisition that finishes past its deadline is skipped. Passing a nil Redis client or a client without `Eval` support causes registration to fail.
 
 ```go
 id, err := tcron.RegisterSingletonCron("0 * * * * *", myJob, rdb, 5*time.Minute)
@@ -56,15 +58,19 @@ id, err := tcron.RegisterSingletonCron("0 * * * * *", myJob, rdb, 5*time.Minute)
 id, err := tcron.RegisterSingletonOnceCron("0 * * * * *", myJob, rdb, 5*time.Minute, arg1)
 ```
 
+A tick that cannot acquire the lease can retry on a later tick. Once execution is admitted, that registration is consumed. Each process has its own registration, so a different process may execute its one-shot handler at a later tick.
+
 ### Unregister
 
 ```go
 ok := tcron.RemoveCron(id)
 ```
 
+Removal prevents later admissions, including an invocation still waiting to acquire its Redis lease. A handler that was already admitted may finish. Recurring handlers may overlap and each invocation receives its own argument slice. Use synchronization for mutable objects passed through that slice.
+
 ## Job identity and Redis keys
 
-Job names are derived from `runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()`. For singleton jobs, this string becomes the Redis lock key, while the lock value is a unique token so release can use compare-and-delete rather than unconditionally deleting the key. Closures typically receive synthetic names (for example `main.main.func1`); for stable lock keys and metric labels, prefer top-level functions or document the naming implications for your deployment.
+Job names come from the handler's runtime function name. Singleton jobs use that name as the Redis lease key. Each acquisition uses a random token and releases only the matching key. Closures typically receive synthetic names (for example `main.main.func1`). Use top-level functions when lock keys and metric labels need to be stable across builds.
 
 ## Metrics
 
