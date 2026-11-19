@@ -14,12 +14,16 @@ github.com/choveylee/terror v0.0.0-20261115114137-e79937fc25fd h1:IV8U2JHa4niB2j
 github.com/choveylee/terror v0.0.0-20261115114137-e79937fc25fd/go.mod h1:g+yfCoM6BdCDQxjiOjXE8xB1yELHepyEtIrD1bIO3RE=
 github.com/choveylee/tlog v0.0.0-20261116080341-5b72778fcc36 h1:CBrmNFcFNbqd/ahPuG7Ywx3QLQdjxXpGyWoHzErrX70=
 github.com/choveylee/tlog v0.0.0-20261116080341-5b72778fcc36/go.mod h1:ZhD85WxQa0oAkPaRRbObFkbjdETDA0PE8h6r1WLGiRY=
+github.com/choveylee/tlog v0.0.0-20261119020720-3f6672c90890 h1:Fjlq7pb9lOGy72V6GsrNxqb6KYQitEjy+7Lx9JLVmuw=
+github.com/choveylee/tlog v0.0.0-20261119020720-3f6672c90890/go.mod h1:+B4FALnhE4yWvMRVMsc/f1sudwxmi1pNqZaDO6HNXpg=
 github.com/choveylee/tmetric v0.0.0-20261115145406-134cef5db860 h1:vIdSPo36JV+f9PdhEMJeDoU3slmk5Me43Q8+uowz4Rc=
 github.com/choveylee/tmetric v0.0.0-20261115145406-134cef5db860/go.mod h1:Gbw2e9ZovEYdSe6YL3jBtes6IBkJlnJcLcPg7jRT/zU=
 github.com/choveylee/ttrace v0.0.0-20261116014058-a02a1ddd5db7 h1:36gcTq+SSAgI5bzfR0CbnUjq/xst5DIrmZEbkAX/+0U=
 github.com/choveylee/ttrace v0.0.0-20261116014058-a02a1ddd5db7/go.mod h1:dN1mUJM89rUNT+M1KLW9Mt1jlljFMph7+IWHaVdKEaw=
 github.com/choveylee/ttrace v0.0.0-20261116234142-05d7c218b32b h1:WgCu5px5qNbAjPp/AMYJPCMWINmIj8j5TWj1HLSlb4E=
 github.com/choveylee/ttrace v0.0.0-20261116234142-05d7c218b32b/go.mod h1:dN1mUJM89rUNT+M1KLW9Mt1jlljFMph7+IWHaVdKEaw=
+github.com/choveylee/ttrace v0.0.0-20261119020621-26f9d63b2ae1 h1:1PcICk1efxv10UF3O13JZG4w7HtCePsMyJg0sDWNtGo=
+github.com/choveylee/ttrace v0.0.0-20261119020621-26f9d63b2ae1/go.mod h1:dN1mUJM89rUNT+M1KLW9Mt1jlljFMph7+IWHaVdKEaw=
 github.com/choveylee/tutil v0.0.0-20261115111556-68bba448e2ea h1:bvBdnEZwN/DxKhqlt1yyxcm/wWDCslb0Mt5IDkmGX14=
 github.com/choveylee/tutil v0.0.0-20261115111556-68bba448e2ea/go.mod h1:FrAlikLqHzFEgiJstyl5+uVyuJewtZc0etWclvDweHk=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
