@@ -5,7 +5,7 @@ go 1.27.4
 require (
 	github.com/choveylee/tlog v0.0.0-20261116080341-5b72778fcc36
 	github.com/choveylee/tmetric v0.0.0-20261115145406-134cef5db860
-	github.com/choveylee/ttrace v0.0.0-20261116014058-a02a1ddd5db7
+	github.com/choveylee/ttrace v0.0.0-20261116234142-05d7c218b32b
 	github.com/choveylee/tutil v0.0.0-20261115111556-68bba448e2ea
 	github.com/redis/go-redis/v9 v9.23.0
 	github.com/robfig/cron/v3 v3.0.1

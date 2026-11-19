@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/choveylee/tlog"
-	"github.com/choveylee/tmetric"
 	"github.com/choveylee/ttrace"
 	"github.com/choveylee/tutil"
 	"github.com/redis/go-redis/v9"
@@ -280,6 +279,7 @@ func (job *cronJob) Run() {
 	defer span.End()
 
 	var handlerStarted time.Time
+	var handlerElapsed time.Duration
 	status := "failed"
 	defer func() {
 		if panicValue := recover(); panicValue != nil {
@@ -289,7 +289,7 @@ func (job *cronJob) Run() {
 		}
 
 		if !handlerStarted.IsZero() && cronJobHistogram != nil {
-			if err := cronJobHistogram.Observe(tmetric.SinceMS(handlerStarted), job.name, status); err != nil {
+			if err := cronJobHistogram.Observe(float64(handlerElapsed)/float64(time.Millisecond), job.name, status); err != nil {
 				tlog.W(ctx).Err(err).Msg("Record cron job latency error")
 			}
 		}
@@ -303,6 +303,7 @@ func (job *cronJob) Run() {
 		defer cancel()
 
 		acquired, err := job.redisClient.SetNX(acquireCtx, job.name, token, job.lockTtl).Result()
+		defer releaseSingletonLock(ctx, job, token, acquired)
 		acquireTimedOut := acquireCtx.Err() != nil
 		cancel()
 
@@ -317,7 +318,6 @@ func (job *cronJob) Run() {
 			return
 		}
 
-		defer releaseSingletonLock(ctx, job, token)
 		if acquireTimedOut || time.Since(leaseStart) >= job.lockTtl {
 			tlog.W(ctx).Msg("Skip cron job because the Redis lease was acquired too late")
 
@@ -326,36 +326,47 @@ func (job *cronJob) Run() {
 	}
 
 	if job.once {
-		if !RemoveCron(job.id) {
+		manager := defaultCronManager
+		manager.Lock()
+		// Check the lease after waiting for the manager, before consuming registration.
+		admitted := job.registered.Load() && (!singleton || time.Since(leaseStart) < job.lockTtl)
+		if admitted {
+			job.registered.Store(false)
+			delete(manager.jobByIdMap, job.id)
+		}
+
+		manager.Unlock()
+		if !admitted {
 			return
 		}
-	} else if !job.registered.Load() {
-		return
-	}
 
-	if singleton && time.Since(leaseStart) >= job.lockTtl {
-		tlog.W(ctx).Msg("Skip cron job because the Redis lease expired before execution")
-
+		// Scheduler cleanup can block; it must not consume the live lease before execution.
+		defer manager.cronClient.Remove(job.entryId)
+	} else if !job.registered.Load() || (singleton && time.Since(leaseStart) >= job.lockTtl) {
 		return
 	}
 
 	handlerStarted = time.Now()
-	err := job.handler(ctx, slices.Clone(job.args)...)
+	err := func() error {
+		defer func() { handlerElapsed = time.Since(handlerStarted) }()
+
+		return job.handler(ctx, slices.Clone(job.args)...)
+	}()
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, "cron handler failed")
-		tlog.E(ctx).Err(err).Msgf("Run cron job error (job id=%s, name=%s, elapsed=%s)", job.id, job.name, time.Since(handlerStarted))
+		tlog.E(ctx).Err(err).Msgf("Run cron job error (job id=%s, name=%s, elapsed=%s)", job.id, job.name, handlerElapsed)
 
 		return
 	}
 
 	status = "success"
-	tlog.I(ctx).Msgf("Run cron job complete (job id=%s, name=%s, elapsed=%s)", job.id, job.name, time.Since(handlerStarted))
+	tlog.I(ctx).Msgf("Run cron job complete (job id=%s, name=%s, elapsed=%s)", job.id, job.name, handlerElapsed)
 }
 
 // releaseSingletonLock uses a separate bounded context and deletes only the lease
 // carrying this invocation's token. An expired lease may already belong to another worker.
-func releaseSingletonLock(ctx context.Context, job *cronJob, lockToken string) {
+func releaseSingletonLock(ctx context.Context, job *cronJob, lockToken string, confirmed bool) {
 	releaseCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), redisCommandTimeout)
 	defer cancel()
 
@@ -366,7 +377,7 @@ func releaseSingletonLock(ctx context.Context, job *cronJob, lockToken string) {
 		return
 	}
 
-	if deleted == 0 {
+	if deleted == 0 && confirmed {
 		tlog.W(ctx).Msg("Skip cron Redis lease release because ownership changed")
 	}
 }
